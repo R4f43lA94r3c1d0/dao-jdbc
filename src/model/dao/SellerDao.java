@@ -18,6 +18,6 @@ public interface SellerDao
     /** Operação responsável por consultar um objeto no banco de dados através do Id */
     Seller findById(Integer id); //Caso não exista, irá retornar nulo.
 
-    /** Operação responsável por retornar uma lista com todos os departamentos do banco de dados */
+    /** Operação responsável por retornar uma lista com todos os vendedores do banco de dados */
     List<Seller> findAll();
 }
