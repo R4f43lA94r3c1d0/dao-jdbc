@@ -123,8 +123,69 @@ public class SellerDaoJDBC implements SellerDao
     }
 
     @Override
-    public List<Seller> findAll() {
-        return null;
+    public List<Seller> findAll()
+    {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try
+        {
+            st = conn.prepareStatement(
+                    "SELECT seller.*,department.Name as DepName "
+                            + "FROM seller INNER JOIN department "
+                            + "ON seller.DepartmentId = department.Id "
+                            + "ORDER BY Name");
+
+            rs = st.executeQuery(); //Executar comendo SQL
+
+            List<Seller> list = new ArrayList<>();
+
+            /** Criando estrutura Map VAZIA para controlar a não repetição do departamento dentro do while.
+             * Dentro desse Map, será guardado qualquer departamento que será instanciado.
+             * Então, dentro do bloco while, ele irá testar se o departamento já existe **/
+            Map<Integer, Department> map = new HashMap<>();
+
+            while (rs.next())
+            {
+                /** Aqui ele irá verificar se já existe o departamento. Ele faz isso
+                 * tentando buscar através do método get (map.get) um departamento
+                 * que já tenha esse id (consultando a coluna do banco de dados cujo nome
+                 * é "DepartmentId"). Caso não exista, o método get retornará nulo,
+                 * e se for nulo, aí sim irá instanciar o departamento **/
+
+                Department dep = map.get(rs.getInt("DepartmentId"));
+
+                if(dep == null)
+                {
+                    /** Como dito acima: Caso seja nulo, instancia um novo departamento **/
+                    dep = instantiateDepartment(rs);
+
+                    /** Agora, iremos salvar esse departamento dentro do Map para que
+                     * na próxima vez, verificar ou não se já existe **/
+                    map.put(rs.getInt("DepartmentId"), dep);
+                }
+
+                Seller obj = instantiateSeller(rs, dep);
+
+                list.add(obj);
+            }
+            return list;
+
+        } catch (SQLException e)
+        {
+            throw new DbException(e.getMessage());
+        }
+        finally
+        {
+            /**
+             * Um detalhe importante: Como os recursos de Statement e ResultSet são externos,
+             * ou seja, não são controlados pela JVM do Java, é interessante realizar o fechamento desses recursos
+             * manualmente, afim de evitar que nosso programa tenha algum tipo de vazamento de memória.
+             */
+
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
     }
 
     @Override
