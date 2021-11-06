@@ -6,10 +6,7 @@ import model.dao.SellerDao;
 import model.entities.Department;
 import model.entities.Seller;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +25,72 @@ public class SellerDaoJDBC implements SellerDao
     @Override
     public void insert(Seller obj)
     {
+        PreparedStatement st = null;
 
+        try
+        {
+            st = conn.prepareStatement(
+                    "INSERT INTO seller "
+                    + "(Name, Email, BirthDate, BaseSalary, DepartmentId) "
+                    + "VALUES "
+                     /** As interrogações são os Placeholders,
+                      * onde iremos setar manualmente os valores **/
+                    + "(?, ?, ?, ?, ?)",
+
+                    /** Esse comando retorna o id do novo vendedor inserido **/
+                    Statement.RETURN_GENERATED_KEYS
+            );
+
+            /** Setar a primeira interrogação, referente a nome  **/
+            st.setString(1, obj.getName());
+
+            /** Setar a segunda interrogação, referente a email  **/
+            st.setString(2, obj.getEmail());
+
+            /** Setar a terceira interrogação, referente a data de aniversário  **/
+            st.setDate(3, new java.sql.Date(obj.getBirthDate().getTime()));
+
+            /** Setar a quarta interrogação, referente a salário  **/
+            st.setDouble(4, obj.getBaseSalary());
+
+            /** Setar a quinta interrogação, referente a departamento  **/
+            st.setInt(5, obj.getDepartment().getId());
+
+            /** Comando para executar o código SQL **/
+            int rowsAffected = st.executeUpdate();
+
+            if(rowsAffected > 0)
+            {
+                ResultSet rs = st.getGeneratedKeys();
+                if(rs.next())
+                {
+                    int id = rs.getInt(1);
+                    obj.setId(id);
+                }
+                /**
+                 * Um detalhe importante: Como os recursos de Statement e ResultSet são externos,
+                 * ou seja, não são controlados pela JVM do Java, é interessante realizar o fechamento desses recursos
+                 * manualmente, afim de evitar que nosso programa tenha algum tipo de vazamento de memória.
+                 */
+                DB.closeResultSet(rs);
+            } else
+            {
+                throw new DbException("Unexpected error! No rows affected!");
+            }
+
+        }catch (SQLException e)
+        {
+            throw new DbException(e.getMessage());
+        }
+        finally
+        {
+            /**
+             * Um detalhe importante: Como os recursos de Statement e ResultSet são externos,
+             * ou seja, não são controlados pela JVM do Java, é interessante realizar o fechamento desses recursos
+             * manualmente, afim de evitar que nosso programa tenha algum tipo de vazamento de memória.
+             */
+            DB.closeStatement(st);
+        }
     }
 
     @Override
