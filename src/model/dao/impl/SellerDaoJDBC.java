@@ -94,7 +94,51 @@ public class SellerDaoJDBC implements SellerDao
     }
 
     @Override
-    public void update(Seller obj) {
+    public void update(Seller obj)
+    {
+        PreparedStatement st = null;
+
+        try
+        {
+            st = conn.prepareStatement(
+                    "UPDATE seller "
+                    + "SET Name = ?, Email = ?, BirthDate = ?, BaseSalary = ?, DepartmentId = ? "
+                    + "WHERE Id = ? ");
+
+            /** Setar a primeira interrogação, referente a nome  **/
+            st.setString(1, obj.getName());
+
+            /** Setar a segunda interrogação, referente a email  **/
+            st.setString(2, obj.getEmail());
+
+            /** Setar a terceira interrogação, referente a data de aniversário  **/
+            st.setDate(3, new java.sql.Date(obj.getBirthDate().getTime()));
+
+            /** Setar a quarta interrogação, referente a salário  **/
+            st.setDouble(4, obj.getBaseSalary());
+
+            /** Setar a quinta interrogação, referente a departamento  **/
+            st.setInt(5, obj.getDepartment().getId());
+
+            /** Setar a sexta interrogação, referente ao id do vendedor  **/
+            st.setInt(6, obj.getId());
+
+            /** Comando para executar o código SQL **/
+            st.executeUpdate();
+
+        }catch (SQLException e)
+        {
+            throw new DbException(e.getMessage());
+        }
+        finally
+        {
+            /**
+             * Um detalhe importante: Como os recursos de Statement e ResultSet são externos,
+             * ou seja, não são controlados pela JVM do Java, é interessante realizar o fechamento desses recursos
+             * manualmente, afim de evitar que nosso programa tenha algum tipo de vazamento de memória.
+             */
+            DB.closeStatement(st);
+        }
 
     }
 
