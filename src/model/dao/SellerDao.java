@@ -1,5 +1,6 @@
 package model.dao;
 
+import model.entities.Department;
 import model.entities.Seller;
 
 import java.util.List;
@@ -20,4 +21,7 @@ public interface SellerDao
 
     /** Operação responsável por retornar uma lista com todos os vendedores do banco de dados */
     List<Seller> findAll();
+
+    /** Operação responsável por consultar um objeto no banco de dados através do departamento **/
+    List<Seller> findByDepartment(Department department);
 }
