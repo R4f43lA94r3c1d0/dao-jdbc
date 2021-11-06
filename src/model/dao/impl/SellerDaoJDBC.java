@@ -143,7 +143,31 @@ public class SellerDaoJDBC implements SellerDao
     }
 
     @Override
-    public void deleteById(Integer id) {
+    public void deleteById(Integer id)
+    {
+        PreparedStatement st = null;
+
+        try
+            {
+                st = conn.prepareStatement("DELETE FROM seller WHERE Id = ?");
+
+                /** Setar a primeira interrogação, referente ao id do vendedor que será deletado **/
+                st.setInt(1, id);
+
+                st.executeUpdate();
+            }catch (SQLException e)
+        {
+            throw new DbException(e.getMessage());
+        }
+        finally
+        {
+            /**
+             * Um detalhe importante: Como os recursos de Statement e ResultSet são externos,
+             * ou seja, não são controlados pela JVM do Java, é interessante realizar o fechamento desses recursos
+             * manualmente, afim de evitar que nosso programa tenha algum tipo de vazamento de memória.
+             */
+            DB.closeStatement(st);
+        }
 
     }
 
