@@ -1,5 +1,6 @@
 package model.dao;
 
+import db.DB;
 import model.dao.impl.SellerDaoJDBC;
 
 public class DaoFactory
@@ -10,6 +11,6 @@ public class DaoFactory
     {
         /** Desse modo, não é exposto a implementação, somente o tipo da interface.
          * Esse é um macete para não expor a implementação, somente a interface **/
-        return new SellerDaoJDBC();
+        return new SellerDaoJDBC(DB.getConnection());
     }
 }
